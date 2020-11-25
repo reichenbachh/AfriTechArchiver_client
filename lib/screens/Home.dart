@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import '../utils/convertColor.dart';
-import '../widgets/NewsArticleItem.dart';
-import 'package:provider/provider.dart';
-import '../Providers/news_article_prov.dart';
+import '../screens/FetchedArticlesScree.dart';
 import '../widgets/Drawer.dart';
+import '../screens/SavedArticleDetailScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,6 +10,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const List<Widget> _widgetOptions = [
+    FetchedArticlesScreen(),
+    SavedArticlesScreen()
+  ];
   int currentIndex = 0;
   @override
   Widget build(BuildContext context) {
@@ -28,70 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Card(
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    suffixIcon: Icon(Icons.search,
-                        color: colorConvert("#8A0707"), size: 30),
-                    suffixStyle: TextStyle(fontSize: 20),
-                    hintText: "Filter news",
-                    hintStyle: TextStyle(color: Colors.grey, fontSize: 20),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          FutureBuilder(
-            future: Provider.of<Blogs>(context, listen: false).fetchBlogs(),
-            builder: (context, dataSnapshot) {
-              print(dataSnapshot.connectionState);
-              if (dataSnapshot.connectionState == ConnectionState.waiting) {
-                print("loading");
-                return Expanded(
-                    child: Center(child: CircularProgressIndicator()));
-              } else {
-                if (dataSnapshot.error != null) {
-                  print(dataSnapshot.error);
-                  return Center(
-                    child: Container(
-                      child: Text(
-                        "An error occured,please check connection or restart app",
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    ),
-                  );
-                } else {
-                  return Consumer<Blogs>(
-                    builder: (ctx, blogData, i) {
-                      return Expanded(
-                        child: ListView.builder(
-                          itemBuilder: (context, i) {
-                            return NewsArticleItem(
-                              blogImageUrl: blogData.blogList[i].imageUrl,
-                              blogTitle: blogData.blogList[i].title,
-                              blogId: blogData.blogList[i].id,
-                              homeContext: context,
-                            );
-                          },
-                          itemCount: blogData.blogList.length,
-                        ),
-                      );
-                    },
-                  );
-                }
-              }
-            },
-          )
-        ],
-      ),
+      body: Container(child: _widgetOptions.elementAt(currentIndex)),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: colorConvert("#8A0707"),

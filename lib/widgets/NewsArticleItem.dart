@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../screens/ArticleDetailsScreen.dart';
 import 'package:provider/provider.dart';
+import '../model.dart';
+import '../Providers/news_article_prov.dart';
 
 class NewsArticleItem extends StatelessWidget {
   final String blogImageUrl;
@@ -58,18 +60,51 @@ class NewsArticleItem extends StatelessWidget {
                       icon: Icon(Icons.archive),
                       color: colorConvert("#8A0707"),
                       iconSize: 30,
-                      onPressed: () {
-                        print(user);
-                        final snackBar = SnackBar(
-                          content:
-                              Text("You need to Login to archive articles"),
-                        );
-
+                      onPressed: () async {
                         if (user != null) {
-                          print("yes");
-                          return "Signed In";
+                          try {
+                            await Provider.of<Blogs>(context, listen: false)
+                                .archiveBlog(
+                                    user.uid,
+                                    Blog(
+                                      body: body,
+                                      title: blogTitle,
+                                      imageUrl: blogImageUrl,
+                                      id: blogId,
+                                    ));
+                            final successSnackBar = SnackBar(
+                              content: Text("Article has been archived"),
+                              action: SnackBarAction(
+                                  label: "Undo", onPressed: () {}),
+                            );
+                            Scaffold.of(context).showSnackBar(successSnackBar);
+                          } catch (e) {
+                            await showDialog<Null>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: Text("Error"),
+                                content: Text(e),
+                                actions: [
+                                  FlatButton(
+                                    child: Text(
+                                      "Ok",
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                    onPressed: () {
+                                      Navigator.of(ctx).pop();
+                                    },
+                                  )
+                                ],
+                              ),
+                            );
+                          }
+                        } else if (user == null) {
+                          final snackBar = SnackBar(
+                            content:
+                                Text("You need to Login to archive articles"),
+                          );
+                          Scaffold.of(context).showSnackBar(snackBar);
                         }
-                        Scaffold.of(context).showSnackBar(snackBar);
                       },
                     ),
                   )
